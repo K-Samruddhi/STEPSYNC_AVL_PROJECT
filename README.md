@@ -27,7 +27,6 @@ typedef struct user
     int daily_goal;
     int weekly_count[7];
     int height;
-
     struct user *left;
     struct user *right;
 } user;
@@ -36,7 +35,6 @@ typedef struct clanmate
 {
     user *clan;
     int height;
-
     struct clanmate *left;
     struct clanmate *right;
 } clanmate;//this structure is for the group members in the group;
@@ -48,7 +46,6 @@ typedef struct group
     int weelky_goal;
     clanmate *teammates;
     int height;
-
     struct group *left;
     struct group *right;
 } group;
@@ -142,7 +139,7 @@ these two functions are used in group achivement as well as in generating the le
 
 void visit_user(user *users)
 {
-    if (users)
+if (users)
     {
         printf("ID \t %d\n", users->ID);
         printf("Group \t %d\n", users->group);
@@ -231,15 +228,12 @@ user *create_user()
         scanf("%d", &newIndividual->daily_goal);
         printf("\n Enter the weekly step count (sunday to saturday) \n");
         for (int i = 0; i < 7; i++)
-            scanf("%d", &newIndividual->weekly_count[i]);
-            
-        newIndividual->left = NULL;
+         scanf("%d", &newIndividual->weekly_count[i]);
+         newIndividual->left = NULL;
         newIndividual->right = NULL;
-
-        printf("user created succesfully \n");
+         printf("user created succesfully \n");
     }
-
-    return newIndividual;
+ return newIndividual;
 }
 This is create user function is two create the user through malloc and creates space for each attribute of user.
 
@@ -344,8 +338,7 @@ user *user_insert_avl(user *root, user *ins)
             root->height = left + 1;
         else
             root->height = right + 1;
-
-        root = user_balance_root(root);
+ root = user_balance_root(root);
     }
     else
     {
@@ -370,7 +363,6 @@ user *create_user_tree(user *head)
         temp->group = 0;        // initially independent
         fscanf(fp, "%s", word);
         strcpy(temp->name, word); // setting word
-
         fscanf(fp, "%d", &c);
         temp->age = c; // setting age
         fscanf(fp, "%d", &c);
@@ -382,10 +374,8 @@ user *create_user_tree(user *head)
         }
         temp->left = NULL;
         temp->right = NULL; // individual node , later added at leaf
-
         head = user_insert_avl(head, temp); // inserts every entry , starting from NULL
     }
-
     fclose(fp);
     return head; // returning the starting node pointer
 }
@@ -397,12 +387,11 @@ user *user_top_3(user *root, user *top_3[])
     {
         // Traverse left subtree
         user_top_3(root->left, top_3);
-
         // Update top 3
         int avg_steps = Avg_steps(root->weekly_count);
         int max1 = 0;
         if (top_3[0])
-            max1 = Avg_steps(top_3[0]->weekly_count);
+        max1 = Avg_steps(top_3[0]->weekly_count);
         int max2 = 0;
         if (top_3[1])
             max2 = Avg_steps(top_3[1]->weekly_count);
@@ -427,8 +416,7 @@ user *user_top_3(user *root, user *top_3[])
                 top_3[2] = root;
             }
         }
-
-        // Traverse right subtree
+       // Traverse right subtree
         user_top_3(root->right, top_3);
     }
     return root;
@@ -440,7 +428,6 @@ void Check_individual_rewards(user *root, user *top_3[])
     printf("Enter the ID of the user to be checked : ");
     int id;
     scanf("%d", &id);
-
     user *uptr = user_search(root, id);
 	if(uptr){
    if(uptr==top_3[0]){
