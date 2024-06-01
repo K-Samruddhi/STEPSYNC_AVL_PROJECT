@@ -462,3 +462,5 @@ else{
 }    
 This function gives the rewards earned by the individuals if the individual is at first position rewards earned by him is 100 if it as second its 75 if third then 50 and if he is not in top_3 no rewards are earned so for these function we have to traverse through whole the tree and check if the individual is matching with which member of array of top_3 .if it is not matching with anyone then the reawards earned by him is 0.
 
+
+The same function s of rotating ,inserting,insertting into AVL tree are done for the structure of clanmates. 
