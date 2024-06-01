@@ -259,20 +259,20 @@ We are creating the AVL tree for storing the information of individulas as well 
 
 user *user_rotate_right(user *root)
 {
-    if (root)
+if (root)
     {
-        if (root->left)
+    if (root->left)
         {
-            user *temp = root->left;
-            root->left = temp->right;
-            temp->right = root;
-            root->height = root->height - 2;
-            root = temp;
+	user *temp = root->left;
+         root->left = temp->right;
+         temp->right = root;
+         root->height = root->height - 2;
+         root = temp;
         }
     }
     return root;
     }
-    user *user_rotate_left(user *root)
+ user *user_rotate_left(user *root)
 {
     if (root)
     {
@@ -450,4 +450,272 @@ else{
 This function gives the rewards earned by the individuals if the individual is at first position rewards earned by him is 100 if it as second its 75 if third then 50 and if he is not in top_3 no rewards are earned so for these function we have to traverse through whole the tree and check if the individual is matching with which member of array of top_3 .if it is not matching with anyone then the reawards earned by him is 0.
 
 
-The same function s of rotating ,inserting,insertting into AVL tree are done for the structure of clanmates. 
+The same function s of rotating ,inserting,insertting into AVL tree are done for the structure of clanmates.
+
+clanmate *clan_find_replace(clanmate *root)
+{
+    clanmate *ans = NULL;
+    if (root)
+    {
+        if (root->right)
+        {
+            ans = clan_find_replace(root->right);
+
+            if (root->right == ans)
+                root->right = NULL;
+
+            int left = 0;
+            if (root->left)
+                left = root->left->height;
+            int right = 0;
+            if (root->right)
+                right = root->right->height;
+
+            if (left > right)
+                root->height = left + 1;
+            else
+                root->height = right + 1;
+
+            root = clan_balance_root(root);
+        }
+        else
+        {
+            ans = root;
+            root->height = 0;
+        }
+    }
+    return ans;
+}
+The above function of clan_find_replace is used for deleting the member of the group for delting the node in an AVLtree first we should search for the appropriate node to replace it.This function does this process.
+
+clanmate *clan_delete_node_2(clanmate *root, group *group_tree)
+{
+    if (root)
+    {
+        clanmate *rep = clan_find_replace(root->left);
+        if (rep)
+        {
+            rep->right = root->right;
+            if (rep == root->left)
+                rep->left = NULL;
+            else
+                rep->left = root->left;
+
+            free(root);
+            root = rep;
+        }
+        else
+        {
+            clanmate *temp = root->right;
+            free(root);
+            root = temp;
+        }
+
+        if (root)
+        {
+            int left = 0;
+            if (root->left)
+                left = root->left->height;
+            int right = 0;
+            if (root->right)
+                right = root->right->height;
+
+            if (left > right)
+                root->height = left + 1;
+            else
+                root->height = right + 1;
+        }
+    }
+    return root;
+}
+Function to delete the node .
+The same functions for the the delting individuals are done .
+
+group *create_group_list(user *user_list, group *head)
+{
+   
+    FILE *fp = fopen("group.txt", "r");
+    char word[40];
+    while (fscanf(fp, "%s", word) != EOF)
+    {
+       
+        int d;
+        group *temp = (group *)malloc(sizeof(group));
+        int c;
+        if (!temp)
+            printf("no space \n");
+        temp->ID = parse(word);
+        printf("%d\n", temp->ID); //
+        fscanf(fp, "%s", word);
+       
+        strcpy(temp->name, word);
+
+        temp->teammates = NULL;
+
+        fscanf(fp, "%d", &c);
+        int flag = 0;
+       
+        for (int i = 0; i < c; i++)
+        {
+            fscanf(fp, "%s", word);
+            user *uptr = user_search(user_list, parse(word)); // getting the user pointer
+
+            if (uptr)
+            { // NULL represents invalid user
+                if (uptr->group == 0)
+                {
+                    clanmate *neew = (clanmate *)malloc(sizeof(clanmate));
+                    neew->clan = uptr;
+                    neew->left = NULL;
+                    neew->right = NULL;
+                    temp->teammates = clan_insert_avl(temp->teammates, neew);
+                    uptr->group = temp->ID;
+                }
+                else
+                    printf(" WARNING : the user %d is present alreday prresent in the group %d \n", uptr->ID, uptr->group);
+            }
+            else
+                printf("INVALID : the given user id is invalid , please give a valid user id \n ");
+        }
+
+        fscanf(fp, "%d", &c);
+        temp->weelky_goal = c;
+
+        temp->left = NULL;
+        temp->right = NULL;
+
+        head = group_inserst_avl(head, temp);
+    }
+
+    fclose(fp);
+    return head;
+}
+// updated
+This the function of creating the AVL tree from group.txt file >this covers the file opearations on group file.
+
+void Check_group_acheivement(group *temp)
+{
+    if (temp)
+    {
+        int sum = clan_avg_steps(temp->teammates);
+        sum = sum / clan_num(temp->teammates);
+        if (sum >= temp->weelky_goal)
+            printf(" the group %s has succesfully achieved their weekly goal \n", temp->name);
+        else
+            printf("the group %s has nat achieved their weekly goal \n", temp->name);
+    }
+    else
+        printf("the group with given id doesn.t exist ");
+}
+This functions check the acheivement of the group(The average steps of weekly counts of members of the groups and there average crosses the weekly_group_goal or not).
+
+group *merge_groups(group *root)
+{
+    if (root)
+    {
+        printf("Enter the IDs of the groups to be merged \n");
+        int grp1_id;
+        int grp2_id;
+        scanf("%d%d", &grp1_id, &grp2_id);
+
+        group *grp1 = group_search(root, grp1_id);
+
+        group *grp2 = group_search(root, grp2_id);
+
+        if (grp1 && grp2)
+        {
+
+            int cnt1 = clan_num(grp1->teammates);
+            int cnt2 = clan_num(grp2->teammates);
+
+            if (cnt1 + cnt2 > 5)
+            {
+                printf("the groups given can't be merged");
+            }
+            else if (grp1 == grp2)
+            {
+                group *neew = (group *)malloc(sizeof(group));
+                neew->ID = grp1_id;
+                printf(" Enter the group name for the newly created group : ");
+                scanf("%s", neew->name);
+                printf(" set the weekly group goal for the newly created group :");
+                scanf("%d", &neew->weelky_goal);
+
+                neew->teammates = clan_copy(grp1->teammates, neew->teammates);
+
+                neew->left = NULL;
+                neew->right = NULL;
+
+                root = group_delete_avl(root, grp1->ID);
+                root = group_inserst_avl(root, neew);
+            }
+            else
+            {
+                group *neew = (group *)malloc(sizeof(group));
+                neew->ID = grp1_id;
+                printf(" Enter the group name for the newly created group : ");
+                scanf("%s", neew->name);
+                printf(" set the weekly group goal for the newly created group :");
+                scanf("%d", &neew->weelky_goal);
+
+                neew->teammates = NULL;   
+                neew->teammates = clan_copy(grp1->teammates, neew->teammates);
+                neew->teammates = clan_copy(grp2->teammates, neew->teammates);
+
+                root = group_delete_avl(root, grp1->ID);
+                root = group_delete_avl(root, grp2->ID);
+
+                root = group_inserst_avl(root, neew);
+            }
+        }
+        else
+            printf("ERROR : unable to find the groups , try again \n");
+    }
+    else
+        printf("ERROR : no groups formed yet \n");
+
+    return root;
+    }
+    This is the function of merging two groups to form new gropus.This functions check to many corener cases these are following.
+    1.The new formed group crosses the limit of group members or not
+    2.the groups we are merging is deleted or not before by delete_group function etc.
+    For generating the leader board we created the new AVL tree of leader board and for generating the leader board we will just do inorder traversal of this AVL tree.
+
+    void Suggest_goal_update(user *user_list, user *top_3[])
+{
+    printf("Enter the ID of the user to be deleted \n");
+    int user_id;
+    scanf("%d", &user_id);
+
+    user *temp = user_search(user_list, user_id);//it will first search the id of the group member
+
+    if (temp)
+    {
+        if (temp == top_3[0])
+            printf("Currently you need no suggestions as you are the first\n");
+        else if (top_3[0])
+            printf("Your goal for the week is %d \n", Avg_steps(top_3[0]->weekly_count));
+        else
+            printf("Your goal for the week is %d \n", temp->daily_goal);
+    }
+    else
+        printf("ERROR : provide a valid user ID \n");
+}
+This is the function of suggesting the goal update to the group to be that group in top_3.
+
+void display_range_info(group*root,int low,int high)
+{
+if(root){
+        if( root->ID>=low && root->ID<=high ){
+            display_range_info(root->left,low,high);
+            visit_group(root);
+            display_range_info(root->right,low,high);
+        } // root is in required range
+        else if( root->ID < low )
+            display_range_info(root->right,low,high); // skipping unwanted part of tree
+        else if (root->ID > high)
+            display_range_info(root->left,low,high); // skipping unwanted part of tree
+    }
+}
+This is the function of range search like if we want to get the groups in particular range of the id we will call this function.
+This project is done using AVL tree data structure as AVL trees are more advanced data structure to store the data.also in this project there are two txt file individulas.txt and group.txt to store the data of groups as well as individulas.
